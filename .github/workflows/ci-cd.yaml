@@ -57,7 +57,7 @@ jobs:
       - name: Test Docker container
         if: github.event_name != 'pull_request'
         run: |
-          docker run -d --name ci-cd-test -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}/cicd-github-actions-docker:${{ github.sha }}"
+          docker run -d --name ci-cd-test -p 3001:3000 "${{ secrets.DOCKERHUB_USERNAME }}/cicd-github-actions-docker:${{ github.sha }}"
 
           for attempt in {1..10}; do
             if curl --fail --silent http://localhost:3000 > /dev/null; then
