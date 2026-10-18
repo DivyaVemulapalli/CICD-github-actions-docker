@@ -1,0 +1,43 @@
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Start application for testing
+        run: |
+          node app.js > app.log 2>&1 &
+          for attempt in {1..10}; do
+            if curl --fail --silent http://localhost:3000 > /dev/null; then
+              echo "Application is ready"
+              break
+            fi
+            sleep 1
+          done
+          curl --fail http://localhost:3000
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Build Docker image
+        run: docker build -t cicd-demo-app:${{ github.sha }} .
