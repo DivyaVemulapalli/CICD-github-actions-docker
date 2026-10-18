@@ -1,10 +1,12 @@
 
+
 FROM node:24-alpine
 
 WORKDIR /app
 
-COPY package.json ./
-COPY app.js ./
+COPY --chown=node:node package.json app.js ./
+
+USER node
 
 EXPOSE 3000
 

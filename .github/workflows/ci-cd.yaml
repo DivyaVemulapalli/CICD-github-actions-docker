@@ -53,6 +53,24 @@ jobs:
             -t "${{ secrets.DOCKERHUB_USERNAME }}/cicd-github-actions-docker:latest" \
             -t "${{ secrets.DOCKERHUB_USERNAME }}/cicd-github-actions-docker:${{ github.sha }}" \
             .
+      
+      - name: Test Docker container
+        if: github.event_name != 'pull_request'
+        run: |
+          docker run -d --name ci-cd-test -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}/cicd-github-actions-docker:${{ github.sha }}"
+
+          for attempt in {1..10}; do
+            if curl --fail --silent http://localhost:3000 > /dev/null; then
+              echo "Docker container is responding"
+              break
+            fi
+            sleep 1
+          done
+
+          curl --fail http://localhost:3000
+          docker logs ci-cd-test
+          docker rm -f ci-cd-test
+
 
       - name: Push Docker image
         if: github.event_name != 'pull_request'
